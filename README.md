@@ -23,4 +23,4 @@ main.py is used to test trained models which have already been saved in B direct
 
 ## Packages required
 
-numpy, pandas, gensim, matplotlib, tensorflow, keras, scikit-learn
+numpy, pandas, gensim, matplotlib, tensorflow1.15, keras, scikit-learn
