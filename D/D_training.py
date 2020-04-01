@@ -77,9 +77,9 @@ x_train, y_train, x_test, y_test = data_split(X, Y, random_state=31)
 # ======================================================================================================================
 # Build Model
 input = Input(shape=(max_seq_len, embedding_size))
-D1 = Conv1D(64, 4)(input)
+D1 = Conv1D(128, 4)(input)
 D2 = MaxPooling1D(pool_size=3)(D1)
-D3 = Conv1D(64, 4)(D2)
+D3 = Conv1D(128, 3)(D2)
 D4 = MaxPooling1D(pool_size=3)(D3)
 D5 = Flatten()(D4)
 D6 = Dropout(0.5)(D5)
@@ -126,8 +126,8 @@ plt.savefig('Hyperparameter.png')
 plt.clf()
 
 # Plot training & validation accuracy values
-plt.plot(hist.history['accuracy'])
-plt.plot(hist.history['val_accuracy'])
+plt.plot(range(1, len(hist.history['accuracy'])+1), hist.history['accuracy'])
+plt.plot(range(1, len(hist.history['accuracy'])+1), hist.history['val_accuracy'])
 plt.title('Model accuracy')
 plt.ylabel('Accuracy')
 plt.xlim(0, len(hist.history['loss'])+1)
@@ -138,8 +138,8 @@ plt.savefig('accuracy.png')
 plt.clf()
 
 # Plot training & validation loss values
-plt.plot(hist.history['loss'])
-plt.plot(hist.history['val_loss'])
+plt.plot(range(1, len(hist.history['accuracy'])+1), hist.history['loss'])
+plt.plot(range(1, len(hist.history['accuracy'])+1), hist.history['val_loss'])
 plt.title('Model loss')
 plt.xlim(0, len(hist.history['loss'])+1)
 plt.ylim(0.2, 0.8)
