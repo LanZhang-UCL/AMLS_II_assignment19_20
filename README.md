@@ -20,6 +20,7 @@ word2vec.py is used to train a word2vec model for word embeddings.
 The trained model was saved in word2vec.wv. 
 
 main.py is used to test trained models which have already been saved in B directory and D directory.
+It also writes predictions of test data into B.csv and D.csv respectively.
 
 ## Packages required
 
