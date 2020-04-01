@@ -14,13 +14,15 @@ They both have a .py file to construct and train a model, but models have differ
 After training, the model is saved in .h5 file.
 There are also 3 .png files to visualize training process.
 
-This project also has 2 .py files: word2vec.py and main.py. 
+This project also has 3 .py files: word2vec.py, main.py and further_test.py. 
 
 word2vec.py is used to train a word2vec model for word embeddings. 
 The trained model was saved in word2vec.wv. 
 
 main.py is used to test trained models which have already been saved in B directory and D directory.
 It also writes predictions of test data into B.csv and D.csv respectively.
+
+further_test.py is used to do further tests using scikit-learn based on predictions which have been written into B.csv and D.csv.
 
 ## Packages required
 
