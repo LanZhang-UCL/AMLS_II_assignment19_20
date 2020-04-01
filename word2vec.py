@@ -10,5 +10,5 @@ text = train_df['content']
 text = text.append(test_df['content'], ignore_index=True)
 for i in range(0, len(text)):
     text[i] = text_to_word_sequence(text[i])
-my_word2vec = Word2Vec(text, size=100, min_count=2)
+my_word2vec = Word2Vec(text, size=200, min_count=2)
 my_word2vec.wv.save('./word2vec.wv')
