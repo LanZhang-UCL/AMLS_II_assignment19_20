@@ -1,33 +1,29 @@
 import numpy as np
 import pandas as pd
-from gensim.models.word2vec import Word2VecKeyedVectors
-from keras.preprocessing.text import text_to_word_sequence
+import pickle
+from keras.preprocessing.sequence import pad_sequences
 from keras.models import load_model
 
 # ======================================================================================================================
 # load test data and models
 df = pd.read_csv('./Datasets/my_test_data.csv')
-wv = Word2VecKeyedVectors.load('./word2vec.wv')
+with open('./Tok.pickle', 'rb') as f:
+    tokenizer = pickle.load(f)
 model_B = load_model('./B/B.h5')
 model_D = load_model('./D/D.h5')
 
 
 # ======================================================================================================================
 # Test configure
-embedding_size = wv.vector_size
 max_seq_len = 200
 batch_size = 128
 
 
 # ======================================================================================================================
-# Obtain test data
-x_test = np.zeros((len(df['content']), max_seq_len, embedding_size), dtype=np.float32)
+# Transform test data
+x_test = tokenizer.texts_to_sequences(df['content'])
+x_test = pad_sequences(x_test, maxlen=max_seq_len, padding='post', truncating='post')
 y_test = df['label']
-for i in range(0, len(df['content'])):
-    temp = text_to_word_sequence(df['content'][i])
-    for j in range(0, min(len(temp), max_seq_len)):
-        if temp[j] in wv.vocab:
-            x_test[i][j] = wv.get_vector(temp[j])
 
 
 # ======================================================================================================================
@@ -43,7 +39,7 @@ loss_D, acc_D = model_D.evaluate(x_test, y_test, batch_size=batch_size)
 
 # ======================================================================================================================
 # print results
-print('B_loss:{}, B_accuracy{}, D_loss:{}, D_accuracy:{}'.format(loss_B, acc_B, loss_D, acc_D))
+print('B_loss:{}, B_accuracy{}:, D_loss:{}, D_accuracy:{}'.format(loss_B, acc_B, loss_D, acc_D))
 
 # ======================================================================================================================
 # write prediction to .csv file
