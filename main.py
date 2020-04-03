@@ -39,7 +39,7 @@ loss_D, acc_D = model_D.evaluate(x_test, y_test, batch_size=batch_size)
 
 # ======================================================================================================================
 # print results
-print('B_loss:{}, B_accuracy{}:, D_loss:{}, D_accuracy:{}'.format(loss_B, acc_B, loss_D, acc_D))
+print('B_loss:{}, B_accuracy:{}, D_loss:{}, D_accuracy:{}'.format(loss_B, acc_B, loss_D, acc_D))
 
 # ======================================================================================================================
 # write prediction to .csv file
