@@ -1,39 +1,34 @@
 import os
 import random
+import pickle
 import numpy as np
 from pandas import read_csv
-from gensim.models.word2vec import Word2VecKeyedVectors
-from keras.preprocessing.text import text_to_word_sequence
+from keras.preprocessing.sequence import pad_sequences
 from keras.models import Model
-from keras.layers import Dense, Input, Dropout, Conv1D, MaxPooling1D, Flatten
+from keras.layers import Dense, Input, Dropout, Conv1D, MaxPooling1D, Flatten, Embedding
 from keras.optimizers import RMSprop
 from keras.callbacks.callbacks import EarlyStopping, ReduceLROnPlateau
 import matplotlib.pyplot as plt
 
 # ======================================================================================================================
-# load data and word embedding model
+# load data and tokenizer
 df = read_csv('../Datasets/my_training_data.csv')
-wv = Word2VecKeyedVectors.load('../word2vec.wv')
-
+with open('../Tok.pickle', 'rb') as f:
+    tokenizer = pickle.load(f)
 
 # ======================================================================================================================
 # Training configure
-embedding_size = wv.vector_size
+num_words = tokenizer.num_words
 max_seq_len = 200
 batch_size = 128
 epochs = 50
-learning_rate = 0.003
-
+learning_rate = 0.01
 
 # ======================================================================================================================
-# Obtain training data
-X = np.zeros((len(df['content']), max_seq_len, embedding_size), dtype=np.float32)
+# Transform data
+X = tokenizer.texts_to_sequences(df['content'])
+X = pad_sequences(X, maxlen=max_seq_len, padding='post', truncating='post')
 Y = df['label']
-for i in range(0, len(df['content'])):
-    temp = text_to_word_sequence(df['content'][i])
-    for j in range(0, min(len(temp), max_seq_len)):
-        if temp[j] in wv.vocab:
-            X[i][j] = wv.get_vector(temp[j])
 
 
 # ======================================================================================================================
@@ -41,7 +36,7 @@ for i in range(0, len(df['content'])):
 def data_split(x, y, train_proportion=0.8, random_state=0):
     # This function is used to split data into training set and test set.
 
-    x_samples, timesteps, features = x.shape
+    x_samples, timesteps = x.shape
     y_samples = y.shape[0]
     if x_samples != y_samples:
         print("Samples do not match, please correct your data!")
@@ -57,12 +52,12 @@ def data_split(x, y, train_proportion=0.8, random_state=0):
     for a in i_train:
         i.remove(a)
     i_test = i
-    x_train = np.empty((n_train, timesteps, features), dtype=np.float32)
+    x_train = np.empty((n_train, timesteps), dtype=np.float32)
     y_train = np.empty(n_train, dtype=int)
     for a in range(0, n_train):
         x_train[a] = x[i_train[a]]
         y_train[a] = y[i_train[a]]
-    x_test = np.empty((n_test, timesteps, features), dtype=np.float32)
+    x_test = np.empty((n_test, timesteps), dtype=np.float32)
     y_test = np.empty(n_test, dtype=int)
     for a in range(0, n_test):
         x_test[a] = x[i_test[a]]
@@ -71,22 +66,23 @@ def data_split(x, y, train_proportion=0.8, random_state=0):
     return x_train, y_train, x_test, y_test
 
 
-x_train, y_train, x_test, y_test = data_split(X, Y, random_state=31)
+x_train, y_train, x_test, y_test = data_split(X, Y, random_state=3)
 
 
 # ======================================================================================================================
 # Build Model
-input = Input(shape=(max_seq_len, embedding_size))
-D1 = Conv1D(128, 4)(input)
-D2 = MaxPooling1D(pool_size=3)(D1)
-D3 = Conv1D(128, 3)(D2)
-D4 = MaxPooling1D(pool_size=3)(D3)
-D5 = Flatten()(D4)
-D6 = Dropout(0.5)(D5)
-D7 = Dense(128)(D6)
-D8 = Dropout(0.5)(D7)
-D9 = Dense(32)(D8)
-output = Dense(1, activation='sigmoid')(D9)
+input = Input(shape=(max_seq_len, ))
+D1 = Embedding(num_words, 128)(input)
+D2 = Conv1D(128, 3)(D1)
+D3 = MaxPooling1D(pool_size=3)(D2)
+D4 = Conv1D(128, 3)(D3)
+D5 = MaxPooling1D(pool_size=3)(D4)
+D6 = Flatten()(D5)
+D7 = Dropout(0.5)(D6)
+D8 = Dense(128)(D7)
+D9 = Dropout(0.5)(D8)
+D10 = Dense(32)(D9)
+output = Dense(1, activation='sigmoid')(D10)
 
 model = Model(input=input, output=output)
 model.summary()
@@ -118,7 +114,7 @@ plt.plot(hist.history['lr'], hist.history['accuracy'])
 plt.plot(hist.history['lr'], hist.history['val_accuracy'])
 plt.title('Hyperparameter')
 plt.xlim(0, learning_rate*1.1)
-plt.ylim(0.7, 1)
+plt.ylim(0.7, 1.1)
 plt.ylabel('Train Accuracy')
 plt.xlabel('learning rate')
 plt.legend(['Train', 'Test'], loc='upper left')
@@ -131,7 +127,7 @@ plt.plot(range(1, len(hist.history['accuracy'])+1), hist.history['val_accuracy']
 plt.title('Model accuracy')
 plt.ylabel('Accuracy')
 plt.xlim(0, len(hist.history['loss'])+1)
-plt.ylim(0.7, 1)
+plt.ylim(0.7, 1.1)
 plt.xlabel('Epoch')
 plt.legend(['Train', 'Test'], loc='upper left')
 plt.savefig('accuracy.png')
@@ -142,7 +138,7 @@ plt.plot(range(1, len(hist.history['accuracy'])+1), hist.history['loss'])
 plt.plot(range(1, len(hist.history['accuracy'])+1), hist.history['val_loss'])
 plt.title('Model loss')
 plt.xlim(0, len(hist.history['loss'])+1)
-plt.ylim(0.2, 0.8)
+plt.ylim(0, 1)
 plt.ylabel('Loss')
 plt.xlabel('Epoch')
 plt.legend(['Train', 'Test'], loc='upper left')
