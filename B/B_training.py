@@ -75,7 +75,7 @@ input = Input(shape=(max_seq_len,))
 B1 = Embedding(num_words, 128, mask_zero=True)(input)
 B2 = LSTM(units=256)(B1)
 B3 = Dropout(0.5)(B2)
-B4 = Dense(64)(B3)
+B4 = Dense(64, activation='relu')(B3)
 B5 = Dropout(0.5)(B4)
 output = Dense(1, activation='sigmoid')(B5)
 
